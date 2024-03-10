@@ -1,21 +1,17 @@
-from django_filters.rest_framework import FilterSet, filters
-
+from django_filters import filters
+from django_filters.rest_framework import FilterSet
 from recipes.models import Ingredient, Recipe, Tag
 
 
 class IngredientFilter(FilterSet):
-    """Выполненяем поиск ингредиентов по полю 'name'."""
-
-    name = filters.CharFilter(lookup_expr='istartswith')
+    name = filters.CharFilter(lookup_expr='startswith')
 
     class Meta:
         model = Ingredient
-        fields = ('name',)
+        fields = ['name']
 
 
 class RecipeFilter(FilterSet):
-    """Класс фильтра для фильтрации рецептов на основе разных критериев."""
-
     tags = filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
         to_field_name='slug',
@@ -30,18 +26,18 @@ class RecipeFilter(FilterSet):
 
     class Meta:
         model = Recipe
-        fields = (
-            'tags', 'author', 'is_favorited', 'is_in_shopping_cart'
-        )
+        fields = ('tags', 'author',)
 
     def get_is_favorited(self, queryset, name, value):
         if value and self.request.user.is_authenticated:
             return queryset.filter(
-                recipes_favorite_related__user=self.request.user)
+                favorites__author=self.request.user,
+            )
         return queryset
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         if value and self.request.user.is_authenticated:
             return queryset.filter(
-                recipes_shoppingcart_related__user=self.request.user)
+                shopping_list__author=self.request.user,
+            )
         return queryset

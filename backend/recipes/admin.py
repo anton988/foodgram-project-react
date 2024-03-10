@@ -1,72 +1,55 @@
 from django.contrib import admin
-
-from recipes.constants import ADMIN_INLINE_EXTRA
-from recipes.models import (
-    AmountIngredient, Favorite, Ingredient,
-    Recipe, ShoppingCart, Tag
-)
+from recipes.models import (FavoriteRecipe, Ingredient, Recipe,
+                            RecipeIngredient, ShoppingCart, Tag)
 
 
-class IngredientInRecipeInline(admin.TabularInline):
-    model = AmountIngredient
-    extra = ADMIN_INLINE_EXTRA
+class RecipeIngredientsInline(admin.TabularInline):
+    model = RecipeIngredient
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = (
-        'pk',
-        'name',
-        'author',
-        'count_favorite'
-    )
-    fields = (
-        ('name', 'tags',),
-        ('text', 'cooking_time'),
-        ('author', 'image'),
-    )
-    search_fields = (
-        'name',
-        'author__username',
-        'tags__name',
-    )
-    list_filter = ('author', 'name', 'tags')
-    inlines = [IngredientInRecipeInline]
-    empty_value_display = '-пусто-'
+    list_display = ('name', 'author', 'counts')
+    list_filter = ('name', 'author', 'tags',)
+    inlines = (RecipeIngredientsInline,)
+    ordering = ['-created_at']
 
-    def count_favorite(self, obj):
-        return obj.recipes_favorite_related.count()
-
-
-@admin.register(AmountIngredient)
-class AmountIngredientAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'recipe', 'ingredient', 'amount')
-    search_fields = ('recipe__name', 'ingredient__name')
-
-
-@admin.register(Ingredient)
-class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'measurement_unit')
-    search_fields = ('name',)
-    list_filter = ('name',)
-    empty_value_display = '-пусто-'
+    def counts(self, obj):
+        return obj.favorite_recipes.count()
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'color', 'slug')
-    list_editable = ('name', 'color', 'slug')
-    search_fields = ('name',)
-    empty_value_display = '-пусто-'
+    list_display = ('name', 'color')
+
+
+@admin.register(Ingredient)
+class IngredientAdmin(admin.ModelAdmin):
+    list_display = ('name', 'measurement_unit')
+    list_filter = ('name',)
+
+
+@admin.register(RecipeIngredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    list_display = ('admin_title', 'ingredient', 'recipe')
+
+    def admin_title(self, obj):
+        return f'Запись номер №{obj.id}'
+
+    admin_title.short_description = "Идентификатор"
+
+
+@admin.register(FavoriteRecipe)
+class FavouriteRecipeAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'user', 'recipe')
-    search_fields = ('user__username', 'recipe__name',)
+    list_display = ('admin_title', 'user', 'recipe')
+    list_filter = ('user', 'recipe')
 
+    def admin_title(self, obj):
+        return f'Запись на покупку номер {obj.id}'
 
-@admin.register(Favorite)
-class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'user', 'recipe')
-    search_fields = ('user__username', 'recipe__name',)
+    admin_title.short_description = "Идентификатор покупки"
