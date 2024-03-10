@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from recipes.models import (FavoriteRecipe, Ingredient, Recipe,
                             RecipeIngredient, ShoppingCart, Tag)
 
@@ -50,6 +51,6 @@ class ShoppingCartAdmin(admin.ModelAdmin):
     list_filter = ('user', 'recipe')
 
     def admin_title(self, obj):
-        return f'Запись на покупку номер {obj.id}'
+        return f'Покупка номер {obj.id}'
 
     admin_title.short_description = "Идентификатор покупки"
