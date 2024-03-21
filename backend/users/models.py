@@ -7,7 +7,8 @@ from django.db.models import UniqueConstraint
 
 class User(AbstractUser):
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name',]
+    REQUIRED_FIELDS = ['email', 'username', 'first_name',
+                       'last_name', 'password']
 
     email = models.EmailField(
         'Электронная почта',
@@ -32,7 +33,7 @@ class User(AbstractUser):
         return self.username
 
 
-class Subscribtion(models.Model):
+class Subscription(models.Model):
     author = models.ForeignKey(
         User,
         verbose_name='Автор',
@@ -50,4 +51,4 @@ class Subscribtion(models.Model):
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         constraints = UniqueConstraint(fields=['author', 'subscriber'],
-                                       name='unique_subscribtion')
+                                       name='unique_subscription')
