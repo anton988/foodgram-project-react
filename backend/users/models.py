@@ -1,20 +1,16 @@
-from constants import MAX_LEN
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import EmailValidator
+from django.core.validators import validate_email
 from django.db import models
 from django.db.models import UniqueConstraint
+from constants import MAX_LEN
 
 
 class User(AbstractUser):
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['email', 'username', 'first_name',
-                       'last_name', 'password']
-
     email = models.EmailField(
         'Электронная почта',
         max_length=MAX_LEN,
         unique=True,
-        validators=[EmailValidator]
+        validators=[validate_email]
     )
     username = models.CharField(
         'Имя пользователя',

@@ -1,0 +1,44 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
+from rest_framework import serializers
+import validators
+
+User = get_user_model()
+username_validator = UnicodeUsernameValidator()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id',
+                  'email',
+                  'username',
+                  'first_name',
+                  'last_name',
+                  'is_subscribed')
+
+    def validate_username(self, value):
+        return validators.validate_username_include_me(value)
+
+    def get_is_subscribed(self, obj):
+        current_user = self.context['request'].user
+        try:
+            validators.validate_subscription(
+                author=obj, subscriber=current_user
+            )
+            return True
+        except ValidationError:
+            return False
+
+
+class CreateUserSerializer(UserSerializer):
+    class Meta:
+        model = User
+        fields = ('email',
+                  'username',
+                  'first_name',
+                  'last_name',
+                  'password')
