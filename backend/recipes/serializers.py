@@ -1,7 +1,11 @@
 from drf_extra_fields.fields import Base64ImageField
+from djoser.serializers import UserSerializer
 from rest_framework import serializers
 from recipes.models import (Tag, Ingredients, Recipe, RecipeIngredients,
                             Favorite, Cart)
+from users.serializers import UserSerializer
+
+User = get_user_model()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -21,7 +25,7 @@ class IngredientsListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredients
-        fields = '__all__'
+        fields = ('id', 'amount')
 
 
 class GetIngregientsSerializer(serializers.ModelSerializer):
@@ -33,7 +37,12 @@ class GetIngregientsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredients
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'measurement_unit',
+            'amount',
+        )
 
 
 class RecipeListSerializer(serializers.ModelSerializer):

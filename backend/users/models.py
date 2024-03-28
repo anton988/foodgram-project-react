@@ -1,8 +1,11 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import validate_email
 from django.db import models
 from django.db.models import UniqueConstraint
 from constants import MAX_LEN
+
+username_validator = UnicodeUsernameValidator()
 
 
 class User(AbstractUser):
@@ -15,7 +18,8 @@ class User(AbstractUser):
     username = models.CharField(
         'Имя пользователя',
         max_length=MAX_LEN,
-        unique=True
+        unique=True,
+        validators=[UnicodeUsernameValidator()]
     )
     first_name = models.CharField('Имя', max_length=MAX_LEN)
     last_name = models.CharField('Фамилия', max_length=MAX_LEN)
@@ -40,7 +44,7 @@ class Subscription(models.Model):
         User,
         verbose_name='Подписчик',
         on_delete=models.CASCADE,
-        related_name='subscribtion'
+        related_name='subscription'
     )
 
     class Meta:
