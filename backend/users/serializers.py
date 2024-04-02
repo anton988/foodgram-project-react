@@ -23,16 +23,15 @@ class UserSerializer(serializers.ModelSerializer):
                   'is_subscribed')
 
     def validate_username(self, value):
-        return validate_username_include_me(value)
+        return validate_username_include_me(value.get('username'))
 
     def get_is_subscribed(self, obj):
         author = obj
         subscriber = self.context['request'].user
-        try:
-            validate_subscription(author, subscriber)
-            return False
-        except ValidationError:
-            return True
+        is_subscribed, message = validate_subscription(author, subscriber)
+        if message:
+            raise ValidationError(message)
+        return is_subscribed
 
 
 class CreateUserSerializer(UserCreateSerializer):
@@ -89,6 +88,8 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         author = data.get('author')
-        subscriber = data.get('subscriber')
-        validate_subscription(author, subscriber)
+        subscriber = self.context['request'].user
+        is_valid, message = validate_subscription(author, subscriber)
+        if message:
+            raise ValidationError(message)
         return data

@@ -56,14 +56,14 @@ class Recipe(BaseModel):
         on_delete=models.CASCADE,
         related_name='recipe_author'
     )
-    name = models.CharField('Название', max_length=MAX_LEN)
+    name = models.CharField('Название', max_length=MAX_LEN, blank=False)
     image = models.ImageField(
         'Картинка',
-        upload_to='recipes',
+        upload_to='recipes/images/',
         null=True,
         blank=True
     )
-    text = models.TextField('Описание')
+    text = models.TextField('Описание', blank=False)
     ingredients = models.ManyToManyField(
         Ingredients,
         verbose_name='Ингредиенты',
@@ -80,6 +80,7 @@ class Recipe(BaseModel):
     )
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
+        blank=False,
         validators=[
             MinValueValidator(
                 limit_value=LIMIT_VALUE,
