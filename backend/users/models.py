@@ -3,7 +3,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import validate_email
 from django.db import models
 from django.db.models import UniqueConstraint
-from constants import MAX_LEN
+from recipes.constants import MAX_LEN
 
 username_validator = UnicodeUsernameValidator()
 

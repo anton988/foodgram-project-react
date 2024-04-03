@@ -1,9 +1,9 @@
 from colorfield.fields import ColorField
-from constants import MAX_TAG_LEN, MAX_LEN, LIMIT_VALUE
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import UniqueConstraint
 from users.models import User
+from .constants import MAX_TAG_LEN, MAX_LEN, LIMIT_VALUE
 
 
 class BaseModel(models.Model):
