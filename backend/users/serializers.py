@@ -1,13 +1,10 @@
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from djoser.serializers import UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from recipes.models import Recipe
-from .models import Subscription
+from .models import User, Subscription
 from .validators import validate_username_include_me, validate_subscription
-
-User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -63,22 +60,14 @@ class SubscriptionSerializer(UserSerializer):
             'recipes_count', 'recipes'
         )
 
-    def get_recipes(self, obj):
-        request = self.context.get('request')
-        limit = request.GET.get('recipes_limit')
-        all_recipes = obj.recipes.all()
+    def get_recipes(self, data):
+        queryset = self.context.get('request')
+        limit = queryset.GET.get('recipes_limit')
+        recipes = data.recipes.all()
         if limit:
-            try:
-                limit = int(limit)
-                all_recipes = all_recipes[:limit]
-            except ValueError:
-                pass
-        recipes_dic = SubscriptionListSerializer(
-            all_recipes,
-            many=True,
-            read_only=True
-        )
-        return recipes_dic.data
+            recipes = recipes[:int(limit)]
+        all_recipes = SubscriptionListSerializer(recipes, many=True)
+        return all_recipes.data
 
 
 class SubscriptionCreateSerializer(serializers.ModelSerializer):

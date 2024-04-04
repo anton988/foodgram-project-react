@@ -44,7 +44,7 @@ class Subscription(models.Model):
         User,
         verbose_name='Подписчик',
         on_delete=models.CASCADE,
-        related_name='subscription'
+        related_name='subscriber'
     )
 
     class Meta:
