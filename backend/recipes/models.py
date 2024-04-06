@@ -38,8 +38,11 @@ class Tag(models.Model):
 
 
 class Ingredients(models.Model):
-    name = models.CharField('Название', unique=True)
-    measurement_unit = models.CharField('Единицы измерения', unique=True)
+    name = models.CharField('Название', max_length=MAX_TAG_LEN, unique=True)
+    measurement_unit = models.CharField(
+        'Единицы измерения',
+        max_length=MAX_TAG_LEN
+    )
 
     class Meta:
         verbose_name = 'Ингредиент'
@@ -67,9 +70,8 @@ class Recipe(BaseModel):
     ingredients = models.ManyToManyField(
         Ingredients,
         verbose_name='Ингредиенты',
-        related_name='recipe_ingredients',
+        related_name='ingredients',
         through='RecipeIngredients',
-        null=False,
         blank=False
     )
     tags = models.ManyToManyField(
@@ -126,10 +128,12 @@ class RecipeIngredients(models.Model):
     )
 
     class Meta:
-        constraints = (
-            models.UniqueConstraint(fields=('recipe', 'ingredients',),
-                                    name='unique_recipe_ingredients'),
-        )
+        constraints = [
+            UniqueConstraint(
+                fields=('recipe', 'ingredients',),
+                name='unique_recipe_ingredients'
+            )
+        ]
         verbose_name = 'Количество ингредиентов'
 
 
@@ -149,8 +153,12 @@ class Favorite(BaseModel):
 
     class Meta:
         verbose_name = 'Избранное'
-        constraints = UniqueConstraint(fields=['user', 'recipe'],
-                                       name='unique_favorite')
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_favorite'
+            )
+        ]
 
 
 class Cart(BaseModel):
@@ -169,5 +177,9 @@ class Cart(BaseModel):
 
     class Meta:
         verbose_name = 'Список покупок'
-        constraints = UniqueConstraint(fields=['user', 'recipe'],
-                                       name='unique_cart')
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_cart'
+            )
+        ]

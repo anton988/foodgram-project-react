@@ -137,7 +137,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -152,10 +152,15 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'users.User'
 
 DJOSER = {
-    'LOGIN_FIELD': ['email', 'username'],
+    'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
     'SERIALIZERS': {
-        'user_create': 'users.serializers.CreateUserSerializer',
-        'user': 'users.serializers.UserSerializer',
-        'current_user': 'users.serializers.UserSerializer',
+        'user': 'users.serializers.MyUserSerializer',
+        'user_create': 'users.serializers.MyUserCreateSerializer',
+        'current_user': 'users.serializers.MyUserSerializer',
     },
+    'PERMISSIONS': {
+        'user': ('rest_framework.permissions.IsAuthenticated',),
+        'user_list': ('rest_framework.permissions.AllowAny',),
+    }
 }

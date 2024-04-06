@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from djoser.serializers import UserCreateSerializer
+from djoser.serializers import UserSerializer, UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from recipes.models import Recipe
@@ -7,17 +7,19 @@ from .models import User, Subscription
 from .validators import validate_username_include_me, validate_subscription
 
 
-class UserSerializer(serializers.ModelSerializer):
+class MyUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
-        fields = ('id',
-                  'email',
-                  'username',
-                  'first_name',
-                  'last_name',
-                  'is_subscribed')
+        fields = (
+            'id',
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed'
+        )
 
     def validate_username(self, value):
         return validate_username_include_me(value.get('username'))
@@ -31,16 +33,26 @@ class UserSerializer(serializers.ModelSerializer):
         return is_subscribed
 
 
-class CreateUserSerializer(UserCreateSerializer):
-    username = serializers.CharField(validate_username_include_me)
+class MyUserCreateSerializer(UserCreateSerializer):
+    username = serializers.CharField(validators=[validate_username_include_me])
 
     class Meta:
         model = User
-        fields = ('email',
-                  'username',
-                  'first_name',
-                  'last_name',
-                  'password')
+        fields = (
+            'id',
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'password'
+        )
+        required_fields = (
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'password'
+        )
 
 
 class SubscriptionListSerializer(serializers.BaseSerializer):

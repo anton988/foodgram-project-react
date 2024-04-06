@@ -12,24 +12,26 @@ class User(AbstractUser):
     email = models.EmailField(
         'Электронная почта',
         max_length=MAX_LEN,
+        validators=[validate_email],
         unique=True,
-        validators=[validate_email]
+        blank=False
     )
     username = models.CharField(
         'Имя пользователя',
         max_length=MAX_LEN,
+        validators=[UnicodeUsernameValidator()],
         unique=True,
-        validators=[UnicodeUsernameValidator()]
+        blank=False
     )
-    first_name = models.CharField('Имя', max_length=MAX_LEN)
-    last_name = models.CharField('Фамилия', max_length=MAX_LEN)
+    first_name = models.CharField('Имя', max_length=MAX_LEN, blank=False)
+    last_name = models.CharField('Фамилия', max_length=MAX_LEN, blank=False)
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.username
 
 
@@ -50,5 +52,9 @@ class Subscription(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-        constraints = UniqueConstraint(fields=['author', 'subscriber'],
-                                       name='unique_subscription')
+        constraints = [
+            UniqueConstraint(
+                fields=['author', 'subscriber'],
+                name='unique_subscription'
+            )
+        ]

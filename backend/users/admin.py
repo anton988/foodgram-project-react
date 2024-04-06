@@ -12,7 +12,7 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('id', 'author', 'subscriber')
-    search_fields = ('author__username')
+    search_fields = ('author__username',)
     list_filter = ('author__username', 'subscriber__username')
     raw_id_fields = ('author', 'subscriber')
     list_per_page = 20
