@@ -1,20 +1,21 @@
 import datetime as dt
 from http import HTTPStatus
-
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
-    SAFE_METHODS, IsAuthenticated, IsAuthenticatedOrReadOnly
+    IsAuthenticated, IsAuthenticatedOrReadOnly, SAFE_METHODS
 )
+
 from rest_framework.response import Response
+from foodgram.pagination import CustomPagination
 from users.models import User
 from users.permissions import IsOwnerOrReadOnly
 from users.serializers import SubscriptionListSerializer
-from .filters import RecipeTagFilter
+from .filters import RecipeTagFilter, IngredientsFilter
 from .models import Tag, Ingredients, Recipe, Favorite, Cart, RecipeIngredients
 from .serializers import (
     TagSerializer,
@@ -27,18 +28,32 @@ from .serializers import (
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    pagination_class = CustomPagination
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredients.objects.all()
     serializer_class = IngredientsSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = IngredientsFilter
+    pagination_class = CustomPagination
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     filterset_class = RecipeTagFilter
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
 
     def get_serializer_context(self):

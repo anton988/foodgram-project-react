@@ -2,11 +2,11 @@ from http import HTTPStatus
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     IsAuthenticated, IsAuthenticatedOrReadOnly
 )
 from rest_framework.response import Response
+from foodgram.pagination import CustomPagination
 from .models import User, Subscription
 from .serializers import MyUserSerializer, SubscriptionSerializer
 
@@ -14,7 +14,7 @@ from .serializers import MyUserSerializer, SubscriptionSerializer
 class MyUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = MyUserSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
@@ -54,8 +54,8 @@ class MyUserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         subscribers = User.objects.filter(subscriber__user=request.user)
-        page = self.paginate_queryset(subscribers)
+        pages = self.paginate_queryset(subscribers)
         serializer = SubscriptionSerializer(
-            page, many=True, context={'request': request}
+            pages, many=True, context={'request': request}
         )
         return self.get_paginated_response(serializer.data)

@@ -49,7 +49,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     ingredients = GetIngregientsAmountSerializer(
         many=True,
-        source='recipeingredients'
+        source='recipe_ingredients'
     )
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField(read_only=True)

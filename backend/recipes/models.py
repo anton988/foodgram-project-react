@@ -3,7 +3,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import UniqueConstraint
 from users.models import User
-from .constants import MAX_TAG_LEN, MAX_LEN, LIMIT_VALUE
+from foodgram.constants import MAX_TAG_LEN, MAX_LEN, LIMIT_VALUE
 
 
 class BaseModel(models.Model):

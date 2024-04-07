@@ -147,6 +147,7 @@ REST_FRAMEWORK = {
         'rest_framework.pagination.PageNumberPagination',
     ],
     'PAGE_SIZE': 6,
+    'PAGE_SIZE_QUERY_PARAM': 'limit',
 }
 
 AUTH_USER_MODEL = 'users.User'
