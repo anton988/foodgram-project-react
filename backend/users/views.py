@@ -19,8 +19,8 @@ class MyUserViewSet(UserViewSet):
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def me(self, request):
-        serializer = self.get_serializer(request.user).data
-        return Response(serializer.data, status=HTTPStatus.OK)
+        me = self.get_serializer(request.user).data
+        return Response(me, status=HTTPStatus.OK)
 
     @action(
         methods=['POST', 'DELETE'],
