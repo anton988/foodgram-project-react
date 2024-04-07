@@ -3,37 +3,29 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated, IsAuthenticatedOrReadOnly
+)
 from rest_framework.response import Response
 from .models import User, Subscription
 from .serializers import MyUserSerializer, SubscriptionSerializer
 
 
 class MyUserViewSet(UserViewSet):
+    queryset = User.objects.all()
     serializer_class = MyUserSerializer
     pagination_class = PageNumberPagination
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        if self.request.user.is_authenticated:
-            context['is_subscribed'] = set(
-                Subscription.objects.filter(user=self.request.user)
-                .values_list('author_id')
-            )
-            context['recipes_count'] = self.request.user.recipes.count()
-        return context
-
+    @action(detail=False, permission_classes=(IsAuthenticated,))
     def me(self, request):
-        serializer = MyUserSerializer(
-            request.user,
-            context={'request': request}
-        )
+        serializer = self.get_serializer(request.user).data
         return Response(serializer.data, status=HTTPStatus.OK)
 
     @action(
         methods=['POST', 'DELETE'],
         detail=True,
-        permission_classes=[IsAuthenticated]
+        permission_classes=(IsAuthenticated,)
     )
     def subscribe(self, request, pk):
         user = self.request.user
@@ -54,16 +46,16 @@ class MyUserViewSet(UserViewSet):
                 author=author
             )
             subscription.delete()
-            return Response(status=HTTPStatus.NO_CONTENT)
+            return Response('Вы отписались', status=HTTPStatus.NO_CONTENT)
 
     @action(
         detail=False,
-        permission_classes=[IsAuthenticated]
+        permission_classes=(IsAuthenticated,)
     )
     def subscriptions(self, request):
-        queryset = User.objects.filter(subscriber__user=request.user)
-        pag_qs = self.paginate_queryset(queryset)
-        subscriptions = SubscriptionSerializer(
-            pag_qs, many=True, context={'request': request}
+        subscribers = User.objects.filter(subscriber__user=request.user)
+        page = self.paginate_queryset(subscribers)
+        serializer = SubscriptionSerializer(
+            page, many=True, context={'request': request}
         )
-        return self.get_paginated_response(subscriptions.data)
+        return self.get_paginated_response(serializer.data)

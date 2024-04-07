@@ -10,14 +10,12 @@ def validate_username_include_me(value):
 
 
 def validate_subscription(author, subscriber):
-    if not subscriber.is_authenticated:
-        return False, 'Вы не аутентифицрованы'
+    if subscriber.is_anonymous:
+        return False, None
     if not author or not subscriber:
         return False, 'Отсутствуют данные об авторе или подписчике'
     if Subscription.objects.filter(
         author=author, subscriber=subscriber
     ).exists():
         return True, 'Вы уже подписаны на данного автора'
-    if author == subscriber:
-        return False, 'Вы не можете подписаться на самого себя'
     return False, None

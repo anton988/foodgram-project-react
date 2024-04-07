@@ -102,30 +102,15 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
     def create_recipe_ingredients(self, recipe, ingredients):
         recipe_ingredients = []
-        for ingredient in ingredients:
-            try:
-                existing_ingredient = RecipeIngredients.objects.get(
-                    name=ingredient['name']
-                )
-                raise ValidationError(
-                    'Ингредиент "{}" существует'.format(
-                        existing_ingredient.name
-                    )
-                )
-            except ObjectDoesNotExist:
-                recipe_ingredients.append(
-                    RecipeIngredients(
-                        recipe=recipe,
-                        ingredient=Ingredients.objects.get(
-                            pk=ingredient['id']
-                        ),
-                        amount=ingredient['amount']
-                    )
-                )
-        if recipe_ingredients:
-            RecipeIngredients.objects.bulk_create(recipe_ingredients)
-        else:
-            raise ValidationError('Добавьте ингредиенты')
+        for ingredient_data in ingredients:
+            ingredient = Ingredients.objects.get(pk=ingredient_data['id'])
+            amount = ingredient_data['amount']
+            recipe_ingredients.append(RecipeIngredients(
+                recipe=recipe,
+                ingredient=ingredient,
+                amount=amount
+            ))
+        RecipeIngredients.objects.bulk_create(recipe_ingredients)
 
     def create_recipe(self, validated_data):
         ingredients = validated_data.pop('ingredients')
