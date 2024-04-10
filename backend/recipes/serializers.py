@@ -41,8 +41,6 @@ class IngredientsAmountSerializer(serializers.ModelSerializer):
 
 
 class CropRecipeSerializer(serializers.ModelSerializer):
-    """Сериалайзер для короткого вывода рецептов"""
-
     image = Base64ImageField()
 
     class Meta:
@@ -58,7 +56,10 @@ class RecipeSerializer(serializers.ModelSerializer):
     )
     author = MyUserSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
-    ingredients = serializers.PrimaryKeyRelatedField(many=True, queryset=Ingredients.objects.all())
+    # до этого у  меня был сериализатор, который возвращал конкретно amount и id.
+    # я его возвращал, но это на протяжении 2 дней приводило к 500 ошибке, и я переделал сериализаторы
+    # ingredients = serializers.PrimaryKeyRelatedField(many=True, queryset=Ingredients.objects.all())
+    # а если заменить на это, то рецепты будут создаваться, но с ошибками
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -70,16 +71,16 @@ class RecipeSerializer(serializers.ModelSerializer):
             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
         )
 
-        def get_ingredients(self, recipe):
-            recipe_ingredients = recipe.recipeingredients_recipe.all()
-            ingredients_data = []
-            for recipe_ingredient in recipe_ingredients:
-                ingredient_data = {
-                    'id': recipe_ingredient.ingredients.id,
-                    'amount': recipe_ingredient.amount
-                }
-                ingredients_data.append(ingredient_data)
-            return ingredients_data
+    def get_ingredients(self, recipe): # это уже просто откровенный бред, который все равно не работает
+        recipe_ingredients = recipe.recipeingredients_recipe.all()
+        ingredients_data = []
+        for recipe_ingredient in recipe_ingredients:
+            ingredient_data = {
+                'id': recipe_ingredient.ingredients.id,
+                'amount': recipe_ingredient.amount
+            }
+            ingredients_data.append(ingredient_data)
+        return ingredients_data
 
     def get_is_favorited(self, obj):
         return is_added_to_list(
