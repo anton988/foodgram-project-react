@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from recipes.models import (Tag, Ingredients, Recipe, RecipeIngredients,
                             Favorite, Cart)
-from users.serializers import UserSerializer
+from users.serializers import MyUserSerializer
 from .validators import is_added_to_list, required_field
 
 
@@ -52,42 +52,34 @@ class CropRecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True, read_only=True)
-    author = UserSerializer(read_only=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True
+    )
+    author = MyUserSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
+    ingredients = serializers.PrimaryKeyRelatedField(many=True, queryset=Ingredients.objects.all())
+    image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    image = Base64ImageField()
 
     class Meta:
         model = Recipe
         fields = (
-            'id',
-            'tags',
-            'author',
-            'ingredients',
-            'is_favorited',
-            'is_in_shopping_cart',
-            'name',
-            'image',
-            'text',
-            'cooking_time',
-        )
-        read_only_fields = (
-            'is_favorite',
-            'is_shopping_cart',
+            'id', 'tags', 'author', 'ingredients', 'is_favorited',
+            'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
         )
 
-    def get_ingredients(self, recipe):
-        recipe_ingredients = recipe.recipeingredients_recipe.all()
-        ingredients_data = []
-        for recipe_ingredient in recipe_ingredients:
-            ingredient_data = {
-                'id': recipe_ingredient.ingredients.id,
-                'amount': recipe_ingredient.amount
-            }
-            ingredients_data.append(ingredient_data)
-        return ingredients_data
+        def get_ingredients(self, recipe):
+            recipe_ingredients = recipe.recipeingredients_recipe.all()
+            ingredients_data = []
+            for recipe_ingredient in recipe_ingredients:
+                ingredient_data = {
+                    'id': recipe_ingredient.ingredients.id,
+                    'amount': recipe_ingredient.amount
+                }
+                ingredients_data.append(ingredient_data)
+            return ingredients_data
 
     def get_is_favorited(self, obj):
         return is_added_to_list(
