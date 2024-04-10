@@ -70,7 +70,7 @@ class Recipe(BaseModel):
     ingredients = models.ManyToManyField(
         Ingredients,
         verbose_name='Ингредиенты',
-        related_name='ingredients',
+        related_name='recipe_ingredients',
         through='RecipeIngredients',
         blank=False
     )
@@ -107,13 +107,13 @@ class RecipeIngredients(models.Model):
         Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients'
+        related_name='recipeingredients_recipe'
     )
     ingredients = models.ForeignKey(
         Ingredients,
         verbose_name='Ингридиент',
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients'
+        related_name='recipeingredients_ingredients'
     )
     amount = models.PositiveSmallIntegerField(
         'Количество',
@@ -135,6 +135,7 @@ class RecipeIngredients(models.Model):
             )
         ]
         verbose_name = 'Количество ингредиентов'
+        verbose_name_plural = 'Количество ингредиентов'
 
 
 class Favorite(BaseModel):
@@ -153,6 +154,7 @@ class Favorite(BaseModel):
 
     class Meta:
         verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
         constraints = [
             UniqueConstraint(
                 fields=['user', 'recipe'],
@@ -177,6 +179,7 @@ class Cart(BaseModel):
 
     class Meta:
         verbose_name = 'Список покупок'
+        verbose_name_plural = 'Список покупок'
         constraints = [
             UniqueConstraint(
                 fields=['user', 'recipe'],
