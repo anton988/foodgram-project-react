@@ -132,3 +132,4 @@ dmypy.json
 .idea
 
 .sqlite3
+media/
