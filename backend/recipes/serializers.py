@@ -71,7 +71,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
         )
 
-    def get_ingredients(self, recipe): # это уже просто откровенный бред, который все равно не работает
+    def get_ingredients(self, recipe):
         recipe_ingredients = recipe.recipeingredients_recipe.all()
         ingredients_data = []
         for recipe_ingredient in recipe_ingredients:
