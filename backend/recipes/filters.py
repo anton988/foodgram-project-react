@@ -1,17 +1,36 @@
-from django_filters import FilterSet, ModelMultipleChoiceFilter, CharFilter
+from django_filters import (
+    FilterSet, ModelMultipleChoiceFilter, CharFilter,
+    ModelChoiceFilter, BooleanFilter
+)
 from .models import Tag, Ingredients, Recipe
+from users.models import User
 
 
-class RecipeTagFilter(FilterSet):
+class RecipeFilter(FilterSet):
     tags = ModelMultipleChoiceFilter(
         field_name='tags__slug',
         to_field_name='slug',
         queryset=Tag.objects.all(),
     )
+    author = ModelChoiceFilter(queryset=User.objects.all())
+    is_favorited = BooleanFilter(method='get_is_favorited')
+    is_in_shopping_cart = BooleanFilter(method='get_is_in_shopping_cart')
 
     class Meta:
         model = Recipe
-        fields = ['tags']
+        fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart')
+
+    def get_is_favorited(self, queryset, name, value):
+        if value and self.request.user.is_authenticated:
+            return queryset.filter(
+                recipes_favorite_related__user=self.request.user)
+        return queryset
+
+    def get_is_in_shopping_cart(self, queryset, name, value):
+        if value and self.request.user.is_authenticated:
+            return queryset.filter(
+                recipes_shoppingcart_related__user=self.request.user)
+        return queryset
 
 
 class IngredientsFilter(FilterSet):
@@ -19,4 +38,4 @@ class IngredientsFilter(FilterSet):
 
     class Meta:
         model = Ingredients
-        fields = ['name']
+        fields = ('name',)

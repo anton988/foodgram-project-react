@@ -1,25 +1,20 @@
-import datetime as dt
-from http import HTTPStatus
-from django.db.models import Sum
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import (
-    IsAuthenticated, IsAuthenticatedOrReadOnly, SAFE_METHODS
+    IsAuthenticated, IsAuthenticatedOrReadOnly
 )
-
 from rest_framework.response import Response
 from foodgram.pagination import CustomPagination
-from users.models import User
 from users.permissions import IsOwnerOrReadOnly
-from .filters import RecipeTagFilter, IngredientsFilter
-from .models import Tag, Ingredients, Recipe, Favorite, Cart, RecipeIngredients
+from .filters import RecipeFilter, IngredientsFilter
+from .models import Tag, Ingredients, Recipe, Favorite, Cart
 from .serializers import (
     TagSerializer,
     IngredientsSerializer,
     RecipeSerializer,
+    RecipeCreateUpdateSerializer,
     CropRecipeSerializer
 )
 
@@ -51,9 +46,15 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    filterset_class = RecipeTagFilter
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
     pagination_class = CustomPagination
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'update', 'partial_update'):
+            return RecipeCreateUpdateSerializer
+        return RecipeSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -75,6 +76,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return self.add_obj(Cart, request.user, pk)
 
         return self.delete_obj(Cart, request.user, pk)
+
     def add_obj(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
             return Response({
