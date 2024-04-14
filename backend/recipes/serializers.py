@@ -84,6 +84,11 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
+    def validate_tags(self, value):
+        if len(set(value)) != len(value):
+            raise ValidationError('Теги не должны повторяться')
+        return value
+
     def validate_ingredients(self, value):
         ingredients = value
         if not ingredients:
@@ -97,7 +102,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        required_fields = ['name', 'image', 'text', 'cooking_time']
+        required_fields = ['tags', 'name', 'image', 'text', 'cooking_time']
         for field in required_fields:
             if not data.get(field):
                 raise serializers.ValidationError(
@@ -119,6 +124,22 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             ) for ingredient in ingredients
         )
         return recipe
+
+    def update_recipe(self, instance, validated_data):
+        instance.ingredients = validated_data.get(
+            'ingredients',
+            instance.ingredients
+        )
+        instance.tags = validated_data.get('tags', instance.tags)
+        instance.image = validated_data.get('image', instance.image)
+        instance.name = validated_data.get('name', instance.name)
+        instance.text = validated_data.get('text', instance.text)
+        instance.cooking_time = validated_data.get(
+            'cooking_time',
+            instance.cooking_time
+        )
+        instance.save()
+        return instance
 
 
 class RecipeSerializer(serializers.ModelSerializer):
