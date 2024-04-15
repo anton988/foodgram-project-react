@@ -27,9 +27,9 @@ class MyUserViewSet(UserViewSet):
         detail=True,
         permission_classes=(IsAuthenticated,)
     )
-    def subscribe(self, request, pk):
-        user = self.request.user
-        author = get_object_or_404(User, id=pk)
+    def subscribe(self, request, id):
+        user = request.user
+        author = get_object_or_404(User, id=id)
         if self.request.method == 'POST':
             serializer = SubscriptionSerializer(
                 author,
@@ -37,13 +37,13 @@ class MyUserViewSet(UserViewSet):
                 context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
-            Subscription.objects.create(user=user, author=author)
+            Subscription.objects.create(subscriber=user, author=author)
             return Response(serializer.data, status=HTTPStatus.CREATED)
         if self.request.method == 'DELETE':
             subscription = get_object_or_404(
                 Subscription,
-                user=user,
-                author=author
+                author=author,
+                subscriber=user
             )
             subscription.delete()
             return Response('Вы отписались', status=HTTPStatus.NO_CONTENT)
@@ -53,7 +53,7 @@ class MyUserViewSet(UserViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def subscriptions(self, request):
-        subscribers = User.objects.filter(subscriber__user=request.user)
+        subscribers = User.objects.filter(subscriber__author=request.user)
         pages = self.paginate_queryset(subscribers)
         serializer = SubscriptionSerializer(
             pages, many=True, context={'request': request}

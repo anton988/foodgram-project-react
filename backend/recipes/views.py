@@ -1,3 +1,5 @@
+from django.db.models import Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
@@ -9,7 +11,7 @@ from rest_framework.response import Response
 from foodgram.pagination import CustomPagination
 from users.permissions import IsOwnerOrReadOnly
 from .filters import RecipeFilter, IngredientsFilter
-from .models import Tag, Ingredients, Recipe, Favorite, Cart
+from .models import Tag, Ingredients, Recipe, Favorite, Cart, RecipeIngredients
 from .serializers import (
     TagSerializer,
     IngredientsSerializer,
@@ -58,7 +60,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=True, methods=['post', 'delete'],
+    @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
 
@@ -67,7 +69,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return self.delete_obj(Favorite, request.user, pk)
 
-    @action(detail=True, methods=['post', 'delete'],
+    @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
 
@@ -94,3 +96,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response({
             'errors': 'Рецепт уже удален'
         }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['GET'], detail=False,
+            permission_classes=[IsAuthenticated])
+    def download_shopping_cart(self, request):
+        shopping_cart = RecipeIngredients.objects.filter(
+            recipeingredients_recipe__recipe__recipe_in_cart__user=request.user
+        ).values('name', 'measurement_unit').annotate(
+            total=Sum('recipe__amount')
+        )
+        if shopping_cart:
+            shopping_list = 'Cписок покупок:\n'
+            for item in shopping_cart:
+                name = item['name']
+                total = item['total']
+                measurement_unit = item['measurement_unit']
+                shopping_list += (
+                    f'{name} - {total} {measurement_unit}\n'
+                )
+            return HttpResponse(shopping_list, content_type='text/plain')
+        return HttpResponse('Список пуст')

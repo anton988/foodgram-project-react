@@ -12,7 +12,7 @@ def validate_username_include_me(value):
         raise ValidationError(
             'Длина username не должна превышать 150 символов'
         )
-    if search(r"^[w.@+-]+Z", value):
+    if search(r"^[w.@+-]+Z$", value):
         raise ValidationError(
             'username не должен содержать символы "^[w.@+-]+Z"'
         )
