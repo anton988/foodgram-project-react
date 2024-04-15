@@ -40,13 +40,17 @@ class MyUserViewSet(UserViewSet):
             Subscription.objects.create(subscriber=user, author=author)
             return Response(serializer.data, status=HTTPStatus.CREATED)
         if self.request.method == 'DELETE':
-            subscription = get_object_or_404(
-                Subscription,
+            subscription = Subscription.objects.filter(
                 author=author,
                 subscriber=user
+            ).first()
+            if subscription:
+                subscription.delete()
+                return Response('Вы отписались', status=HTTPStatus.NO_CONTENT)
+            return Response(
+                'Подписка не найдена',
+                status=HTTPStatus.BAD_REQUEST
             )
-            subscription.delete()
-            return Response('Вы отписались', status=HTTPStatus.NO_CONTENT)
 
     @action(
         detail=False,

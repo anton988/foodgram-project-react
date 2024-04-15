@@ -1,6 +1,8 @@
-from re import search
+import re
 from django.core.exceptions import ValidationError
 from .models import Subscription
+
+USERNAME_RE_PATTERN = re.compile(r"[w.@+-]+Z")
 
 
 def validate_username_include_me(value):
@@ -12,7 +14,7 @@ def validate_username_include_me(value):
         raise ValidationError(
             'Длина username не должна превышать 150 символов'
         )
-    if search(r"^[w.@+-]+Z$", value):
+    if not USERNAME_RE_PATTERN.fullmatch(value):
         raise ValidationError(
             'username не должен содержать символы "^[w.@+-]+Z"'
         )
