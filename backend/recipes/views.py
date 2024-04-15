@@ -114,5 +114,5 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 shopping_list += (
                     f'{name} - {total} {measurement_unit}\n'
                 )
-            return HttpResponse(shopping_list, content_type='text/plain')
+            return HttpResponse(shopping_list, content_type='recipes/text')
         return HttpResponse('Список пуст')
