@@ -28,8 +28,6 @@ class MyUserSerializer(UserSerializer):
         author = obj
         subscriber = self.context['request'].user
         is_subscribed, message = validate_subscription(author, subscriber)
-        if message:
-            raise ValidationError(message)
         return is_subscribed
 
 
@@ -62,6 +60,10 @@ class SubscriptionListSerializer(serializers.BaseSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        return representation
+
 
 class SubscriptionSerializer(UserSerializer):
     recipes_count = serializers.IntegerField(read_only=True)
@@ -93,7 +95,7 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         author = data.get('author')
         subscriber = self.context['request'].user
-        is_valid, message = validate_subscription(author, subscriber)
+        bool, message = validate_subscription(author, subscriber)
         if message:
             raise ValidationError(message)
         return data

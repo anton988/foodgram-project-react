@@ -18,7 +18,7 @@ from .serializers import (
     IngredientsSerializer,
     RecipeSerializer,
     RecipeCreateUpdateSerializer,
-    CropRecipeSerializer
+    ShortRecipeSerializer
 )
 
 
@@ -80,23 +80,37 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return self.delete_obj(Cart, request.user, pk)
 
     def add_obj(self, model, user, pk):
+        recipe_exists = Recipe.objects.filter(id=pk).exists()
+        if not recipe_exists:
+            return Response(
+                {'errors': 'Рецепт не найден'},
+                status=HTTPStatus.BAD_REQUEST
+            )
         if model.objects.filter(user=user, recipe__id=pk).exists():
-            return Response({
-                'errors': 'Рецепт уже добавлен в список'
-            }, status=HTTPStatus.BAD_REQUEST)
+            return Response(
+                {'errors': 'Рецепт уже добавлен в список'},
+                status=HTTPStatus.BAD_REQUEST
+            )
         recipe = get_object_or_404(Recipe, id=pk)
         model.objects.create(user=user, recipe=recipe)
-        serializer = CropRecipeSerializer(recipe)
+        serializer = ShortRecipeSerializer(recipe)
         return Response(serializer.data, status=HTTPStatus.CREATED)
 
     def delete_obj(self, model, user, pk):
         obj = model.objects.filter(user=user, recipe__id=pk)
+        recipe_exists = Recipe.objects.filter(id=pk).exists()
         if obj.exists():
             obj.delete()
             return Response(status=HTTPStatus.NO_CONTENT)
-        return Response(
-            {'errors': 'Рецепт не найден'}, status=HTTPStatus.NOT_FOUND
-        )
+        elif not recipe_exists:
+            return Response(
+                {'errors': 'Рецепт не найден'}, status=HTTPStatus.NOT_FOUND
+            )
+        else:
+            return Response(
+                {'errors': 'Рецепт не был добавлен в список'},
+                status=HTTPStatus.BAD_REQUEST
+            )
 
     @action(methods=['GET'], detail=False,
             permission_classes=[IsAuthenticated])

@@ -49,7 +49,7 @@ class IngredientsListingSerializer(serializers.ModelSerializer):
         fields = ('id', 'amount')
 
 
-class CropRecipeSerializer(serializers.ModelSerializer):
+class ShortRecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
 
     class Meta:
