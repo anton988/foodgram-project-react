@@ -102,10 +102,14 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        required_fields = ['tags', 'name', 'image', 'text', 'cooking_time']
+        tags = self.initial_data.get('tags')
+        ingredients = self.initial_data.get('ingredients')
+        if not tags or not ingredients:
+            raise ValidationError('Обязательные поля для заполнения')
+        required_fields = ['name', 'image', 'text', 'cooking_time']
         for field in required_fields:
             if not data.get(field):
-                raise serializers.ValidationError(
+                raise ValidationError(
                     f'{field} - поле обязательное для заполнения'
                 )
         return data
@@ -141,14 +145,24 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.get('recipeingredients_recipe')
         if ingredients_data is not None:
             for ingredient_data in ingredients_data:
-                ingredient_id = ingredient_data['id']
+                ingredient_id = ingredient_data['id'].id
                 amount = ingredient_data['amount']
-                instance.ingredients.create(
+                RecipeIngredients.objects.create(
                     ingredients_id=ingredient_id,
-                    amount=amount
+                    amount=amount,
+                    recipe=instance
                 )
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        serializer = RecipeSerializer(
+            instance,
+            context={
+                'request': self.context.get('request')
+            }
+        )
+        return serializer.data
 
 
 class RecipeSerializer(serializers.ModelSerializer):

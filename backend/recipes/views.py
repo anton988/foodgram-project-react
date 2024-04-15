@@ -2,7 +2,8 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status
+from http import HTTPStatus
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (
     IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -62,7 +63,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[IsAuthenticated])
-    def favorite(self, request, pk=None):
+    def favorite(self, request, pk):
 
         if request.method == 'POST':
             return self.add_obj(Favorite, request.user, pk)
@@ -71,7 +72,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[IsAuthenticated])
-    def shopping_cart(self, request, pk=None):
+    def shopping_cart(self, request, pk):
 
         if request.method == 'POST':
             return self.add_obj(Cart, request.user, pk)
@@ -82,20 +83,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if model.objects.filter(user=user, recipe__id=pk).exists():
             return Response({
                 'errors': 'Рецепт уже добавлен в список'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            }, status=HTTPStatus.BAD_REQUEST)
         recipe = get_object_or_404(Recipe, id=pk)
         model.objects.create(user=user, recipe=recipe)
         serializer = CropRecipeSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=HTTPStatus.CREATED)
 
     def delete_obj(self, model, user, pk):
         obj = model.objects.filter(user=user, recipe__id=pk)
         if obj.exists():
             obj.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=HTTPStatus.NO_CONTENT)
         return Response({
             'errors': 'Рецепт уже удален'
-        }, status=status.HTTP_400_BAD_REQUEST)
+        }, status=HTTPStatus.BAD_REQUEST)
 
     @action(methods=['GET'], detail=False,
             permission_classes=[IsAuthenticated])

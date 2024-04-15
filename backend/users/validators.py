@@ -27,5 +27,5 @@ def validate_subscription(author, subscriber):
     if Subscription.objects.filter(
         author=author, subscriber=subscriber
     ).exists():
-        return True, 'Вы уже подписаны на данного автора'
+        return True, None
     return False, None
