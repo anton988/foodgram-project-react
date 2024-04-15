@@ -4,7 +4,9 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from recipes.models import Recipe
 from .models import User, Subscription
-from .validators import validate_username_include_me, validate_subscription
+from .validators import (
+    validate_user, validate_subscription, check_subscription
+)
 
 
 class MyUserSerializer(UserSerializer):
@@ -22,17 +24,17 @@ class MyUserSerializer(UserSerializer):
         )
 
     def validate_username(self, value):
-        return validate_username_include_me(value.get('username'))
+        return validate_user(value.get('username'))
 
     def get_is_subscribed(self, obj):
         author = obj
         subscriber = self.context['request'].user
-        is_subscribed, message = validate_subscription(author, subscriber)
+        is_subscribed = check_subscription(author, subscriber)
         return is_subscribed
 
 
 class MyUserCreateSerializer(UserCreateSerializer):
-    username = serializers.CharField(validators=[validate_username_include_me])
+    username = serializers.CharField(validators=[validate_user])
 
     class Meta:
         model = User
@@ -95,7 +97,8 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         author = data.get('author')
         subscriber = self.context['request'].user
-        bool, message = validate_subscription(author, subscriber)
-        if message:
-            raise ValidationError(message)
+        try:
+            validate_subscription(author, subscriber)
+        except ValidationError as e:
+            raise ValidationError(e.detail)
         return data

@@ -5,7 +5,7 @@ from .models import Subscription
 USERNAME_RE_PATTERN = re.compile(r"^[\w.@+-]+$")
 
 
-def validate_username_include_me(value):
+def validate_user(value):
     if value == 'me':
         raise ValidationError(
             'Использовать имя "me" в качестве username запрещено'
@@ -21,15 +21,28 @@ def validate_username_include_me(value):
     return value
 
 
-def validate_subscription(author, subscriber):
+def check_subscription(author, subscriber):
     if author == subscriber:
-        return False, 'Нельяз подписаться на себя'
+        return False
     if subscriber.is_anonymous:
-        return False, 'Вы не авторизованы'
+        return False
     if not author or not subscriber:
-        return False, 'Отсутствуют данные об авторе или подписчике'
+        return False
     if Subscription.objects.filter(
         author=author, subscriber=subscriber
     ).exists():
-        return True, 'Вы уже подписаны'
-    return False, None
+        return True
+    return False
+
+
+def validate_subscription(author, subscriber):
+    if author == subscriber:
+        raise ValidationError('Нельзя подписаться на себя')
+    if subscriber.is_anonymous:
+        raise ValidationError('Вы не авторизованы')
+    if not author or not subscriber:
+        raise ValidationError('Отсутствуют данные об авторе или подписчике')
+    if Subscription.objects.filter(
+        author=author, subscriber=subscriber
+    ).exists():
+        raise ValidationError('Вы уже подписаны')
