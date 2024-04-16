@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -116,18 +116,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
         shopping_cart = RecipeIngredients.objects.filter(
-            recipeingredients_recipe__recipe__recipe_in_cart__user=request.user
+            recipe__recipe_in_cart__user=request.user
+        ).annotate(
+            name=F('ingredients__name'),
+            measurement_unit=F('ingredients__measurement_unit')
         ).values('name', 'measurement_unit').annotate(
-            total=Sum('recipe__amount')
+            total=Sum('amount')
         )
         if shopping_cart:
-            shopping_list = 'Cписок покупок:\n'
+            shopping_list = 'CПИСОК ПОКУПОК:\n'
             for item in shopping_cart:
                 name = item['name']
                 total = item['total']
                 measurement_unit = item['measurement_unit']
                 shopping_list += (
-                    f'{name} - {total} {measurement_unit}\n'
+                    f'- {name} - {total} {measurement_unit}\n'
                 )
-            return HttpResponse(shopping_list, content_type='recipes/text')
-        return HttpResponse('Список пуст')
+            response = HttpResponse(shopping_list, content_type='text/plain')
+            response[
+                'Content-Disposition'
+            ] = 'attachment; filename="shopping_list.txt"'
+            return response
+        return Response(
+            {'errors': 'Список пуст'}, status=HTTPStatus.BAD_REQUEST
+        )

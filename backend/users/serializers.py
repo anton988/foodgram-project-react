@@ -3,7 +3,7 @@ from djoser.serializers import UserSerializer, UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from recipes.models import Recipe
-from .models import User, Subscription
+from .models import User
 from .validators import validate_user, validate_subscription
 
 
