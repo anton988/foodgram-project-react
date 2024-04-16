@@ -30,14 +30,29 @@ class MyUserViewSet(UserViewSet):
     def subscribe(self, request, id):
         user = request.user
         author = get_object_or_404(User, id=id)
-        if self.request.method == 'POST':
-            serializer = SubscriptionSerializer(
-                data={'author': author.pk, 'subscriber': user.pk},
-                context={'request': request}
+        if user == author:
+            return Response(
+                {'error': 'Вы не можете подписаться на самого себя'},
+                status=HTTPStatus.BAD_REQUEST
             )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=HTTPStatus.CREATED)
+        if self.request.method == 'POST':
+            existing_subscription = Subscription.objects.filter(
+                subscriber=user, author=author
+            ).exists()
+            if existing_subscription:
+                return Response(
+                    {'error': 'Вы уже подписаны на этого автора'},
+                    status=HTTPStatus.BAD_REQUEST
+                )
+            subscription = Subscription.objects.create(
+                author=author,
+                subscriber=user,
+            )
+            subscription.save()
+            serializator = SubscriptionSerializer(
+                subscription, context={'request': request}
+            )
+            return Response(serializator.data, HTTPStatus.CREATED)
         if self.request.method == 'DELETE':
             subscription = Subscription.objects.filter(
                 author=author,

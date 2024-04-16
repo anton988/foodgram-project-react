@@ -23,13 +23,13 @@ def validate_user(value):
 
 def validate_subscription(author, subscriber):
     if author == subscriber:
-        return False, 'Нельяз подписаться на себя'
+        return False
     if subscriber.is_anonymous:
-        return False, 'Вы не авторизованы'
+        return False
     if not author or not subscriber:
-        return False, 'Отсутствуют данные об авторе или подписчике'
+        return False
     if Subscription.objects.filter(
         author=author, subscriber=subscriber
     ).exists():
-        return True, 'Вы уже подписаны'
-    return False, None
+        return True
+    return False
