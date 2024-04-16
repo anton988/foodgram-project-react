@@ -34,7 +34,8 @@ jobs:
           pip install flake8==6.0.0
           pip install -r ./backend/requirements.txt
       - name: Test with flake8
-        run: python -m flake8 backend/
+        run: |
+          python -m flake8
 
   build_and_push_backend_docker_image:
     name: Push Docker image for backend to DockerHub
