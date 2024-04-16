@@ -53,7 +53,7 @@ class MyUserCreateSerializer(UserCreateSerializer):
         )
 
 
-class SubscriptionListSerializer(serializers.BaseSerializer):
+class ShortRecipeListSerializer(serializers.BaseSerializer):
     image = Base64ImageField()
 
     class Meta:
@@ -65,35 +65,18 @@ class SubscriptionListSerializer(serializers.BaseSerializer):
         return representation
 
 
-class SubscriptionSerializer(UserSerializer):
+class SubscriptionSerializer(MyUserSerializer):
     recipes_count = serializers.IntegerField(read_only=True)
-    recipes = serializers.SerializerMethodField()
+    recipes = ShortRecipeListSerializer(read_only=True, many=True)
 
-    class Meta(UserSerializer.Meta):
-        fields = UserSerializer.Meta.fields + (
+    class Meta(MyUserSerializer.Meta):
+        fields = MyUserSerializer.Meta.fields + (
             'recipes_count', 'recipes'
         )
-
-    def get_recipes(self, obj):
-        user = obj
-        queryset = Recipe.objects.filter(author=user)
-        limit = self.context['request'].query_params.get('recipes_limit')
-        if limit:
-            queryset = queryset[:int(limit)]
-        serializer = SubscriptionListSerializer(
-            queryset, many=True,
-            context=self.context
-        )
-        return serializer.data
-
-
-class SubscriptionCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subscription
-        fields = ('author', 'subscriber')
+        read_only_fields = ('email', 'username', 'first_name', 'last_name')
 
     def validate(self, data):
-        author = data.get('author')
+        author = User.objects.get(pk=data.get('author'))
         subscriber = self.context['request'].user
         is_subscribed, message = validate_subscription(author, subscriber)
         if message:
