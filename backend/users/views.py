@@ -71,7 +71,7 @@ class MyUserViewSet(UserViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def subscriptions(self, request):
-        subscribers = User.objects.filter(subscriber__author=request.user)
+        subscribers = Subscription.objects.filter(subscriber=request.user)
         pages = self.paginate_queryset(subscribers)
         serializer = SubscriptionSerializer(
             pages, many=True, context={'request': request}

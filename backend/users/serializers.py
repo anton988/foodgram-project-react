@@ -52,7 +52,7 @@ class MyUserCreateSerializer(UserCreateSerializer):
         )
 
 
-class ShortRecipeListSerializer(serializers.BaseSerializer):
+class ShortRecipeListSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
 
     class Meta:
