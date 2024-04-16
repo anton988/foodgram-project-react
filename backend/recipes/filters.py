@@ -1,9 +1,18 @@
 from django_filters import (
     FilterSet, ModelMultipleChoiceFilter, CharFilter,
-    ModelChoiceFilter, BooleanFilter
+    ModelChoiceFilter, Filter
 )
 from .models import Tag, Ingredients, Recipe
 from users.models import User
+
+
+class CustomBooleanFilter(Filter):
+    def filter(self, qs, value):
+        if value in (True, '1'):
+            return qs.filter(**{self.field_name: True})
+        elif value in (False, '0'):
+            return qs.filter(**{self.field_name: False})
+        return qs
 
 
 class RecipeFilter(FilterSet):
@@ -13,8 +22,8 @@ class RecipeFilter(FilterSet):
         queryset=Tag.objects.all(),
     )
     author = ModelChoiceFilter(queryset=User.objects.all())
-    is_favorited = BooleanFilter(method='get_is_favorited')
-    is_in_shopping_cart = BooleanFilter(method='get_is_in_shopping_cart')
+    is_favorited = CustomBooleanFilter(method='get_is_favorited')
+    is_in_shopping_cart = CustomBooleanFilter(method='get_is_in_shopping_cart')
 
     class Meta:
         model = Recipe

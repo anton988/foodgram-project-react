@@ -59,10 +59,6 @@ class ShortRecipeListSerializer(serializers.BaseSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        return representation
-
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     recipes = serializers.SerializerMethodField(
