@@ -19,7 +19,7 @@
 1. Клонировать репозиторий:
 `git clone https://github.com/anton988/foodgram-project-react`
 2. Установите Docker на сервере:
-sudo apt install docker.io
+`sudo apt install docker.io`
 3. Установите Docker-compose на сервере:
 ```
 sudo curl -L "https://github.com/docker/compose/releases/download/v2.17.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
