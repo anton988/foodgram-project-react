@@ -26,6 +26,3 @@ python manage.py fill_db
 ```
 bash clear_db.sh
 ```
-Что не работает:
-1. Фильтрация по `is_in_shopping_cart` и `is_favorited`
-2. Подписки
