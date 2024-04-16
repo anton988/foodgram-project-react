@@ -8,7 +8,9 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from foodgram.pagination import CustomPagination
 from .models import User, Subscription
-from .serializers import MyUserSerializer, SubscriptionSerializer
+from .serializers import (
+    MyUserSerializer, SubscriptionSerializer, SubscriptionCreateSerializer
+)
 
 
 class MyUserViewSet(UserViewSet):
@@ -31,13 +33,20 @@ class MyUserViewSet(UserViewSet):
         user = request.user
         author = get_object_or_404(User, id=id)
         if self.request.method == 'POST':
-            serializer = SubscriptionSerializer(
-                author,
-                data=request.data,
+            existing_subscription = Subscription.objects.filter(
+                subscriber=user, author=author
+            ).exists()
+            if existing_subscription:
+                return Response(
+                    {'error': 'Вы уже подписаны на этого автора'},
+                    status=HTTPStatus.BAD_REQUEST
+                )
+            serializer = SubscriptionCreateSerializer(
+                data={'author': author.pk, 'subscriber': user.pk},
                 context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
-            Subscription.objects.create(subscriber=user, author=author)
+            serializer.save()
             return Response(serializer.data, status=HTTPStatus.CREATED)
         if self.request.method == 'DELETE':
             subscription = Subscription.objects.filter(
