@@ -6,7 +6,9 @@ def is_added_to_list(obj, user, list_model):
     if user.is_authenticated:
         recipe_exists = Recipe.objects.filter(id=obj.id).exists()
         if recipe_exists:
-            is_added = list_model.objects.filter(user=user, recipe=obj).exists()
+            is_added = list_model.objects.filter(
+                user=user, recipe=obj
+            ).exists()
         else:
             raise ValidationError("Рецепт не существует")
     else:
