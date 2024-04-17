@@ -7,13 +7,13 @@
 Для работы проекта был разработан и настроен CI/CD.
 
 ### Технологии проекта:
-- Python
-- Django
-- Django REST framework
-- Postgres
-- Docker
-- Nginx
-- GitHub Actions
+- *Python*
+- *Django*
+- *Django REST framework*
+- *Postgres*
+- *Docker*
+- *Nginx*
+- *GitHub Actions*
 
 ### Как запустить проект:
 1. Клонировать репозиторий:
